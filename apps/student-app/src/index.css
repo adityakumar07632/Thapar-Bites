@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@import "@campus-bites/ui/tokens.css";
+
+/* Scan the shared design-system package so its utility classes are emitted. */
+@source "../../../packages/ui/src";
+
+@layer base {
+  body {
+    /* The student app sits inside a phone frame on a slightly darker page. */
+    background: var(--color-steel-150);
+    overscroll-behavior-y: none;
+  }
+}
+
+@layer utilities {
+  .scroll-quiet::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  /* Ticket-stub notches: two circular cutouts bitten into the top/bottom of a
+     vertical perforation line. Used only on the PairCode ticket — the one
+     signature element — never as generic decoration. Only ever place this on
+     a card sitting directly on the steel-150 page background. */
+  .ticket-notch::before,
+  .ticket-notch::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: var(--color-steel-150);
+    border-radius: 999px;
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+  .ticket-notch::before {
+    top: -10px;
+  }
+  .ticket-notch::after {
+    bottom: -10px;
+  }
+
+  .perforation {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--color-steel-300) 0,
+      var(--color-steel-300) 6px,
+      transparent 6px,
+      transparent 14px
+    );
+    width: 2px;
+  }
+}

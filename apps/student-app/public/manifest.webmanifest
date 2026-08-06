@@ -1,0 +1,10 @@
+{
+  "name": "Thapar Bites",
+  "short_name": "Thapar Bites",
+  "description": "A modern campus food ordering platform built exclusively for the Thapar Institute of Engineering & Technology community.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#111827",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

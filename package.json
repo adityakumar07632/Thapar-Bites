@@ -1,0 +1,25 @@
+{
+  "name": "campus-bites-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Campus Food Ordering Platform \u2014 full-stack build (Student App, API, Restaurant/Admin Dashboard).",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,student,ops -c blue,green,magenta \"npm:dev:api\" \"npm:dev:student\" \"npm:dev:ops\"",
+    "dev:api": "npm run dev --workspace apps/api",
+    "dev:student": "npm run dev --workspace apps/student-app",
+    "dev:ops": "npm run dev --workspace apps/ops-dashboard",
+    "build:api": "npm run build --workspace apps/api",
+    "build:student": "npm run build --workspace apps/student-app",
+    "build:ops": "npm run build --workspace apps/ops-dashboard",
+    "build": "npm run build:api && npm run build:student && npm run build:ops",
+    "seed": "npm run seed --workspace apps/api",
+    "verify": "node scripts/verify-platform.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}

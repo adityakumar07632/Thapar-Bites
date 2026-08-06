@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import "@campus-bites/ui/tokens.css";
+
+/* Scan the shared design-system package so its utility classes are emitted. */
+@source "../../../packages/ui/src";
+
+@layer base {
+  body {
+    /* Ops dashboard sits on a slightly darker surface than the student app. */
+    background: var(--color-steel-100);
+  }
+}
+
+@layer utilities {
+  /* Staggered entrance animation for list items and table rows. */
+  .animate-in-item {
+    animation: rise 0.22s ease-out both;
+  }
+}
