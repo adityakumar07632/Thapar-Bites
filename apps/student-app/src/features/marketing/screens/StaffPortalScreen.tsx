@@ -5,7 +5,9 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
 /** URL of the Ops Dashboard (restaurant & admin login). Configurable via env so
  * it works in both local dev and any hosted deployment without code changes. */
-const OPS_URL = import.meta.env.VITE_OPS_URL || 'http://localhost:5174';
+const OPS_URL =
+  import.meta.env.VITE_OPS_URL ??
+  "https://campus-bitesops-dashboard-production.up.railway.app";
 
 const CARDS = [
   {
