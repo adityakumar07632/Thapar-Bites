@@ -10,5 +10,17 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  server: { port: 5174 },
+
+  server: {
+    host: true,
+    port: 5174,
+  },
+
+  preview: {
+    host: true,
+    port: 5174,
+    allowedHosts: [
+      "campus-bitesops-dashboard-production.up.railway.app",
+    ],
+  },
 })
