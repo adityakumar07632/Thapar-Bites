@@ -8,7 +8,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "start:prod": "node dist/index.js",
     "build": "tsc -p tsconfig.json",
+    "prod": "npm run build && npm run start:prod",
     "seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
