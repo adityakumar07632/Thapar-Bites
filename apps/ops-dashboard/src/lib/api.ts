@@ -1,17 +1,24 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+const BASE_URL =
+  import.meta.env.VITE_API_URL ??
+  "https://campus-bitesapi-production.up.railway.app/api/v1";
 
 export interface ApiSuccess<T> {
   success: true;
   data: T;
 }
+
 export interface ApiFailure {
   success: false;
-  error: { code: string; message: string };
+  error: {
+    code: string;
+    message: string;
+  };
 }
 
 export class ApiRequestError extends Error {
   code: string;
   status: number;
+
   constructor(code: string, message: string, status = 0) {
     super(message);
     this.code = code;
@@ -35,91 +42,139 @@ interface TokenAccessors {
 }
 
 let accessors: TokenAccessors | null = null;
+
 export function setAccessTokenAccessors(next: TokenAccessors) {
   accessors = next;
 }
 
-/** Concurrent 401s must produce exactly ONE refresh — two parallel rotations
- * would make the second look like a replayed token, which the server treats as
- * theft and answers by revoking the whole session family. */
+/**
+ * Concurrent 401s must produce exactly ONE refresh — two parallel rotations
+ * would make the second look like a replayed token.
+ */
 let inflightRefresh: Promise<string | null> | null = null;
 
 function refreshOnce(): Promise<string | null> {
   if (!accessors) return Promise.resolve(null);
+
   if (!inflightRefresh) {
     inflightRefresh = accessors.refresh().finally(() => {
       inflightRefresh = null;
     });
   }
+
   return inflightRefresh;
 }
 
 async function rawRequest<T>(
   method: string,
   path: string,
-  { token, body }: { token?: string | null; body?: unknown } = {},
+  {
+    token,
+    body,
+  }: {
+    token?: string | null;
+    body?: unknown;
+  } = {},
 ): Promise<T> {
   let res: Response;
+
   try {
     res = await fetch(`${BASE_URL}${path}`, {
       method,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
-    // Phase 2 bug fix: a dropped connection used to surface as the raw
-    // "Failed to fetch" TypeError in the dashboard UI.
-    throw new ApiRequestError('SYSTEM_002', 'Cannot reach the server. Check your connection and try again.');
+    throw new ApiRequestError(
+      "SYSTEM_002",
+      "Cannot reach the server. Check your connection and try again.",
+    );
   }
 
-  if (res.status === 204) return undefined as T;
+  if (res.status === 204) {
+    return undefined as T;
+  }
 
-  const json = (await res.json().catch(() => ({}))) as ApiSuccess<T> | ApiFailure;
+  const json = (await res.json().catch(() => ({}))) as
+    | ApiSuccess<T>
+    | ApiFailure;
 
   if (!res.ok || !json.success) {
     const failure = json as ApiFailure;
+
     throw new ApiRequestError(
-      failure.error?.code ?? 'SYSTEM_001',
-      failure.error?.message ?? 'Request failed.',
+      failure.error?.code ?? "SYSTEM_001",
+      failure.error?.message ?? "Request failed.",
       res.status,
     );
   }
-  return json.data;
+
+  return (json as ApiSuccess<T>).data;
 }
 
 async function request<T>(
   method: string,
   path: string,
-  options: { token?: string | null; body?: unknown } = {},
+  options: {
+    token?: string | null;
+    body?: unknown;
+  } = {},
 ): Promise<T> {
   const token = options.token ?? accessors?.getToken() ?? null;
+
   try {
-    return await rawRequest<T>(method, path, { ...options, token });
+    return await rawRequest<T>(method, path, {
+      ...options,
+      token,
+    });
   } catch (error) {
-    const isExpiredAuth = error instanceof ApiRequestError && error.status === 401 && !path.startsWith('/auth/');
+    const isExpiredAuth =
+      error instanceof ApiRequestError &&
+      error.status === 401 &&
+      !path.startsWith("/auth/");
+
     if (!isExpiredAuth) throw error;
 
     const fresh = await refreshOnce();
+
     if (!fresh) {
       accessors?.onAuthLost();
       throw error;
     }
-    return rawRequest<T>(method, path, { ...options, token: fresh });
+
+    return rawRequest<T>(method, path, {
+      ...options,
+      token: fresh,
+    });
   }
 }
 
 export const api = {
-  get: <T>(path: string, token?: string | null) => request<T>('GET', path, { token }),
-  post: <T>(path: string, body?: unknown, token?: string | null) => request<T>('POST', path, { token, body }),
-  put: <T>(path: string, body?: unknown, token?: string | null) => request<T>('PUT', path, { token, body }),
-  patch: <T>(path: string, body?: unknown, token?: string | null) => request<T>('PATCH', path, { token, body }),
-  del: <T>(path: string, token?: string | null) => request<T>('DELETE', path, { token }),
+  get: (path: string, token?: string | null) =>
+    request("GET", path, { token }),
+
+  post: (path: string, body?: unknown, token?: string | null) =>
+    request("POST", path, { token, body }),
+
+  put: (path: string, body?: unknown, token?: string | null) =>
+    request("PUT", path, { token, body }),
+
+  patch: (path: string, body?: unknown, token?: string | null) =>
+    request("PATCH", path, { token, body }),
+
+  del: (path: string, token?: string | null) =>
+    request("DELETE", path, { token }),
 };
 
-/** Bypasses the interceptor so a failing refresh can't recurse into another. */
-export function postWithoutAuth<T>(path: string, body?: unknown): Promise<T> {
-  return rawRequest<T>('POST', path, { body });
+/**
+ * Bypasses the interceptor so a failing refresh can't recurse into another.
+ */
+export function postWithoutAuth<T>(
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  return rawRequest<T>("POST", path, { body });
 }
