@@ -6,7 +6,8 @@ export interface StreamEvent {
   [key: string]: unknown;
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL ??
+ "https://campus-bitesapi-production.up.railway.app/api/v1";
 
 /** See apps/student-app's useEventStream for the full rationale — same
  * "dumb" event pattern and the same Phase 2 hardening (single-use stream
